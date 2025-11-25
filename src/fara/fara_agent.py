@@ -148,7 +148,7 @@ class FaraAgent:
             )
             return True  # Captcha solved in time
         except asyncio.TimeoutError:
-            print(f"Captcha timeout after {timeout_seconds} seconds!")
+            self.logger.warning(f"Captcha timeout after {timeout_seconds} seconds!")
             # Force resume execution
             self.browser_manager._captcha_event.set()
             return False  # Captcha timed out
@@ -376,8 +376,9 @@ class FaraAgent:
             )
             assert isinstance(raw_response, str)
             all_actions.append(raw_response)
-            # Print the model response
-            print(f"\n[fara_agent] {raw_response}")
+            thoughts, action_dict = self._parse_thoughts_and_action(raw_response)
+            action_args = action_dict.get("arguments", {})
+            self.logger.info(f"\nThought #{i+1}: {thoughts}\nAction #{i+1}: executing tool '{action_args["action"]}' with arguments {json.dumps(action_args)}")
 
             (
                 is_stop_action,
@@ -385,10 +386,9 @@ class FaraAgent:
                 action_description,
             ) = await self.execute_action(function_call)
             all_observations.append(action_description)
-            # Print action description
-            print(f"\n[fara_agent] {action_description}")
+            self.logger.info(f"Observation#{i+1}: {action_description}")
             if is_stop_action:
-                final_answer = raw_response
+                final_answer = thoughts
                 break
         return final_answer, all_actions, all_observations
 
@@ -437,7 +437,7 @@ class FaraAgent:
         args = function_call[0].arguments
         action_description = ""
         assert self._page is not None
-        self.logger.info(
+        self.logger.debug(
             WebSurferEvent(
                 source="FaraAgent",
                 url=await self._playwright_controller.get_page_url(self._page),
@@ -563,6 +563,7 @@ class FaraAgent:
         elif args["action"] == "pause_and_memorize_fact":
             fact = str(args.get("fact"))
             self._facts.append(fact)
+            action_description= f"I memorized the following fact: {fact}"
         elif args["action"] == "stop" or args["action"] == "terminate":
             action_description = args.get("thoughts")
             is_stop_action = True

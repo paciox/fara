@@ -9,7 +9,24 @@ from pathlib import Path
 import json
 
 
-logging.basicConfig(level=logging.INFO)
+# Configure logging to only show logs from fara.fara_agent
+# Disable all logging by default
+logging.basicConfig(
+    level=logging.CRITICAL,  # Set root logger to CRITICAL to suppress all logs
+    format="%(message)s",  # Simple format without logger name
+)
+
+# Enable INFO level only for fara.fara_agent
+fara_agent_logger = logging.getLogger("fara.fara_agent")
+fara_agent_logger.setLevel(logging.INFO)
+
+# Add a handler to ensure fara_agent logs are shown
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter("%(message)s"))
+fara_agent_logger.addHandler(handler)
+fara_agent_logger.propagate = False  # Don't propagate to root logger
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,11 +46,16 @@ async def run_fara_agent(
     save_screenshots: bool = True,
     max_rounds: int = 100,
     use_browser_base: bool = False,
-    retries_on_failure: int = 3,
+    retries_on_failure: int = 1,
 ):
     # Create the FaraAgent instance
+    print("##########################################")
+    print(f"Task: {task}")
+    print("##########################################")
+
     for _ in range(retries_on_failure):
         # Initialize browser manager
+        print("Initializing Browser...")
         browser_manager = BrowserBB(
             headless=headless,
             viewport_height=900,
@@ -48,6 +70,7 @@ async def run_fara_agent(
             use_browser_base=use_browser_base,
             logger=logger,
         )
+        print("Browser Running... Starting Fara Agent...")
 
         agent = FaraAgent(
             browser_manager=browser_manager,
@@ -60,8 +83,9 @@ async def run_fara_agent(
 
         try:
             await agent.initialize()
-            print(f"Running task: {task}")
-            await agent.run(task)
+            print("Running Fara...\n")
+            final_answer, all_actions, all_observations = await agent.run(task)
+            print(f"\nFinal Answer: {final_answer}")
             break  # Exit the retry loop if successful
         except Exception as e:
             print(f"Error occurred: {e}")
@@ -118,8 +142,12 @@ async def main():
     args = parser.parse_args()
 
     if args.browserbase:
-        assert os.environ.get("BROWSERBASE_API_KEY"), "BROWSERBASE_API_KEY environment variable must be set to use browserbase"
-        assert os.environ.get("BROWSERBASE_PROJECT_ID"), "BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID environment variables must be set to use browserbase"
+        assert os.environ.get("BROWSERBASE_API_KEY"), (
+            "BROWSERBASE_API_KEY environment variable must be set to use browserbase"
+        )
+        assert os.environ.get("BROWSERBASE_PROJECT_ID"), (
+            "BROWSERBASE_API_KEY and BROWSERBASE_PROJECT_ID environment variables must be set to use browserbase"
+        )
 
     endpoint_config = DEFAULT_ENDPOINT_CONFIG
     if args.endpoint_config:
