@@ -40,7 +40,7 @@ Then you can iterative query it with:
 fara-cli --task "whats the weather in new york now"
 ```
 
-To try Fara-7B inside Magentic-UI, please follow the instructions here [Magentic-UI + Fara-7B](https://github.com/microsoft/magentic-ui/blob/main/README.md#fara-7b). You will need to serve the model as before, but instead of fara-cli you can use Magentic-UI which has a nice UI.
+To try Fara-7B inside Magentic-UI, please follow the instructions here [Magentic-UI + Fara-7B](https://github.com/microsoft/magentic-ui/blob/main/README.md#fara-7b). You will need to serve the model as before, but instead of fara-cli you can use Magentic-UI which has a nice UI (see video demos below).
 
 
 Notes:
