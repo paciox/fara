@@ -141,9 +141,9 @@ class WebSurferSystem(BaseSystem):
 
 
             if self.start_on_target_url:
-                start_page = example_data.get("url", example_data.get("web", "https://www.bing.com"))
+                start_page = example_data.get("url", example_data.get("web", "https://www.google.com"))
             else:
-                start_page = "https://www.bing.com"
+                start_page = "https://www.google.com"
 
             question_text = example_data.get("question", "")
 
@@ -152,7 +152,7 @@ class WebSurferSystem(BaseSystem):
                 ### assumes local vllm server on localhost:5000 which should have already been started by this point
                 client_config = {
                     "model": "gpt-4o-mini-2024-07-18",
-                    "base_url": "http://localhost:5000/v1",
+                    "base_url": "https://97c2c5c32c86.ngrok-free.app/v1",
                     "api_key": "not-needed",
                 }
             else:

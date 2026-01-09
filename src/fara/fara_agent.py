@@ -30,7 +30,7 @@ from .utils import get_trimmed_url
 
 
 class FaraAgent:
-    DEFAULT_START_PAGE = "https://www.bing.com/"
+    DEFAULT_START_PAGE = "https://www.google.com/"
 
     MLM_PROCESSOR_IM_CFG = {
         "min_pixels": 3136,
@@ -479,7 +479,7 @@ class FaraAgent:
                     reset_last_download,
                 ) = await self._playwright_controller.visit_page(
                     self._page,
-                    f"https://www.bing.com/search?q={quote_plus(url)}&FORM=QBLH",
+                    f"https://www.google.com/search?q={quote_plus(url)}&FORM=QBLH",
                 )
             # Otherwise, prefix with https://
             else:
@@ -504,7 +504,7 @@ class FaraAgent:
                 reset_prior_metadata,
                 reset_last_download,
             ) = await self._playwright_controller.visit_page(
-                self._page, f"https://www.bing.com/search?q={encoded_query}&FORM=QBLH"
+                self._page, f"https://www.google.com/search?q={encoded_query}&FORM=QBLH"
             )
             if reset_last_download and self._last_download is not None:
                 self._last_download = None

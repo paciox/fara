@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_ENDPOINT_CONFIG = {
     "model": "microsoft/Fara-7B",
-    "base_url": "http://localhost:5000/v1",
+    "base_url": "https://97c2c5c32c86.ngrok-free.app/v1",
     "api_key": "not-needed",
 }
 
@@ -39,7 +39,7 @@ DEFAULT_ENDPOINT_CONFIG = {
 async def run_fara_agent(
     initial_task: str = None,
     endpoint_config: Dict[str, str] = None,
-    start_page: str = "https://www.bing.com/",
+    start_page: str = "https://www.google.com/",
     headless: bool = True,
     downloads_folder: str = None,
     save_screenshots: bool = True,
@@ -123,7 +123,7 @@ def main():
     parser.add_argument(
         "--start_page",
         type=str,
-        default="https://www.bing.com/",
+        default="https://www.google.com/",
         help="The starting page",
     )
     parser.add_argument(
