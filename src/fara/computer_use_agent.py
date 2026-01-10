@@ -75,6 +75,10 @@ class ComputerUseAgent:
         self._chat_history: List[LLMMessage] = []
         self._openai_client: AsyncOpenAI | None = None
         self.include_input_text_key_args = True
+        
+        # Action loop detection to prevent repeated actions
+        self._last_actions = []
+        self._max_repeated_actions = 3
 
     async def initialize(self) -> None:
         """Initialize OpenAI client."""
@@ -255,6 +259,19 @@ class ComputerUseAgent:
             print(
                 f"\nThought #{i+1}: {thoughts}\nAction #{i+1}: executing '{action}' with {json.dumps(action_args)}"
             )
+            
+            # Check for action loops (same action + coordinates repeated)
+            action_signature = f"{action}_{json.dumps(action_args.get('coordinate', ''))}"
+            self._last_actions.append(action_signature)
+            if len(self._last_actions) > 5:
+                self._last_actions.pop(0)
+            
+            if self._last_actions.count(action_signature) >= self._max_repeated_actions:
+                self.logger.warning(f"Detected action loop: {action_signature}. Stopping.")
+                print(f"\n⚠️ Detected repeated action loop - stopping to prevent infinite clicks.")
+                final_answer = "Task likely complete or stuck - detected repeated actions."
+                is_stop_action = True
+                break
             
             is_stop_action, action_description = await self.execute_action(function_call)
             all_observations.append(action_description)

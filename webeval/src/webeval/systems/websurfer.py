@@ -152,7 +152,7 @@ class WebSurferSystem(BaseSystem):
                 ### assumes local vllm server on localhost:5000 which should have already been started by this point
                 client_config = {
                     "model": "gpt-4o-mini-2024-07-18",
-                    "base_url": "https://97c2c5c32c86.ngrok-free.app/v1",
+                    "base_url": "https://e570fdd3b923.ngrok-free.app/v1",
                     "api_key": "not-needed",
                 }
             else:

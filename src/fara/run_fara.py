@@ -2,6 +2,7 @@ import asyncio
 import argparse
 import os
 from .fara_agent import FaraAgent
+from .computer_use_agent import ComputerUseAgent
 from .browser.browser_bb import BrowserBB
 import logging
 from typing import Dict
@@ -31,9 +32,66 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_ENDPOINT_CONFIG = {
     "model": "microsoft/Fara-7B",
-    "base_url": "https://97c2c5c32c86.ngrok-free.app/v1",
+    "base_url": "https://e570fdd3b923.ngrok-free.app/v1",
     "api_key": "not-needed",
 }
+
+
+async def run_computer_use_agent(
+    initial_task: str = None,
+    endpoint_config: Dict[str, str] = None,
+    downloads_folder: str = None,
+    save_screenshots: bool = True,
+    max_rounds: int = 100,
+):
+    """Run the Computer Use agent for desktop automation."""
+    print("Starting Computer Use Agent...")
+
+    agent = ComputerUseAgent(
+        client_config=endpoint_config,
+        downloads_folder=downloads_folder,
+        save_screenshots=save_screenshots,
+        max_rounds=max_rounds,
+    )
+
+    try:
+        await agent.initialize()
+
+        # Interactive loop
+        task = initial_task
+        first_round = True
+
+        while True:
+            if task is None:
+                if first_round:
+                    task = input("Enter task: ").strip()
+                else:
+                    task = input(
+                        "\nEnter another task (or press Enter to exit): "
+                    ).strip()
+
+                if not task:
+                    print("Exiting...")
+                    break
+
+            print("##########################################")
+            print(f"Task: {task}")
+            print("##########################################")
+
+            try:
+                print("Running Computer Use Agent...\n")
+                final_answer, all_actions, all_observations = await agent.run(task)
+                print(f"\nFinal Answer: {final_answer}")
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                import traceback
+                traceback.print_exc()
+            task = None
+            first_round = False
+
+    finally:
+        # Close the agent
+        await agent.close()
 
 
 async def run_fara_agent(
@@ -127,6 +185,11 @@ def main():
         help="The starting page",
     )
     parser.add_argument(
+        "--computer_use",
+        action="store_true",
+        help="Use Computer Use mode for desktop automation (instead of browser mode)",
+    )
+    parser.add_argument(
         "--headful",
         action="store_true",
         help="Run the browser in headful mode (show GUI, default is headless)",
@@ -205,18 +268,30 @@ def main():
     if args.model:
         endpoint_config["model"] = args.model
 
-    asyncio.run(
-        run_fara_agent(
-            initial_task=args.task,
-            endpoint_config=endpoint_config,
-            start_page=args.start_page,
-            headless=not args.headful,
-            downloads_folder=args.downloads_folder,
-            save_screenshots=args.save_screenshots,
-            max_rounds=args.max_rounds,
-            use_browser_base=args.browserbase,
+    # Route to appropriate agent based on mode
+    if args.computer_use:
+        asyncio.run(
+            run_computer_use_agent(
+                initial_task=args.task,
+                endpoint_config=endpoint_config,
+                downloads_folder=args.downloads_folder,
+                save_screenshots=args.save_screenshots,
+                max_rounds=args.max_rounds,
+            )
         )
-    )
+    else:
+        asyncio.run(
+            run_fara_agent(
+                initial_task=args.task,
+                endpoint_config=endpoint_config,
+                start_page=args.start_page,
+                headless=not args.headful,
+                downloads_folder=args.downloads_folder,
+                save_screenshots=args.save_screenshots,
+                max_rounds=args.max_rounds,
+                use_browser_base=args.browserbase,
+            )
+        )
 
 
 if __name__ == "__main__":

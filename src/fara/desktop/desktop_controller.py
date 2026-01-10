@@ -29,7 +29,7 @@ class DesktopController:
 
     async def get_screenshot(self, path: str | None = None) -> bytes:
         """
-        Capture screenshot of the entire desktop.
+        Capture screenshot of the primary monitor only.
         
         Args:
             path: Optional path to save screenshot to disk
@@ -37,7 +37,9 @@ class DesktopController:
         Returns:
             Screenshot as bytes
         """
-        screenshot = pyautogui.screenshot()
+        # Capture only primary monitor to avoid multi-monitor coordinate issues
+        # Region: (left, top, width, height) - primary monitor starts at (0,0)
+        screenshot = pyautogui.screenshot(region=(0, 0, self.screen_width, self.screen_height))
         
         if path:
             screenshot.save(path)
